@@ -184,6 +184,7 @@ def upload(
 @click.option('--background', '-b', default='blur', help='Background mode: blur, black, or hex color')
 @click.option('--keep-video', is_flag=True, help='Keep the intermediate MP4 file')
 @click.option('--video-only', is_flag=True, help='Only create video, do not upload')
+@click.option('--thumbnail', type=click.Path(exists=True), help='Custom thumbnail image (overrides metadata)')
 def publish(
     mp3_file: Optional[str],
     metadata: Optional[str],
@@ -195,7 +196,8 @@ def publish(
     privacy: str,
     background: str,
     keep_video: bool,
-    video_only: bool
+    video_only: bool,
+    thumbnail: Optional[str]
 ):
     """
     Convert MP3 and upload to YouTube in one step
@@ -244,15 +246,16 @@ def publish(
 
     # Determine other fields
     final_cover = cover or meta.get('cover')
-    final_description = description or build_description(
-        meta.get('description'),
-        meta.get('source'),
-        include_source=True
-    )
+    final_description = description or meta.get('description', '')
     final_tags = [t.strip() for t in tags.split(',')] if tags else meta.get('tags')
     final_category = category or meta.get('category', 'music')
     final_privacy = privacy or meta.get('privacy', 'private')
+    final_thumbnail = thumbnail or meta.get('thumbnail')
     made_for_kids = meta.get('madeForKids', False)
+
+    # Resolve thumbnail path if relative
+    if final_thumbnail and not Path(final_thumbnail).is_absolute():
+        final_thumbnail = str(base_dir / final_thumbnail)
 
     # Check dependencies
     if not check_ffmpeg_installed():
@@ -317,6 +320,14 @@ def publish(
         console.print(f"[green]✓[/green] Title: {result['title']}")
         console.print(f"[green]✓[/green] URL: {result['url']}")
         console.print(f"[dim]Privacy: {result['privacy']}[/dim]")
+
+        # Set thumbnail if provided
+        if final_thumbnail:
+            try:
+                set_thumbnail(result['id'], final_thumbnail)
+                console.print(f"[green]✓[/green] Thumbnail set")
+            except YouTubeError as e:
+                console.print(f"[yellow]Warning: Could not set thumbnail: {e}[/yellow]")
 
         # Cleanup
         if not keep_video:
