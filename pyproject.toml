@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mp3-to-youtube"
+version = "0.1.0"
+description = "Convert MP3 files to YouTube-ready videos and upload them"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Simon Lauger", email = "simon@lauger.de"}
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Conversion",
+    "Topic :: Multimedia :: Video :: Conversion",
+]
+keywords = ["youtube", "mp3", "video", "upload", "music"]
+
+dependencies = [
+    "click>=8.0",
+    "rich>=13.0",
+    "mutagen>=1.45",
+    "Pillow>=9.0",
+    "PyYAML>=6.0",
+    "google-api-python-client>=2.0",
+    "google-auth-oauthlib>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+mp3-to-youtube = "mp3_to_youtube.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/slauger/mp3-to-youtube"
+Repository = "https://github.com/slauger/mp3-to-youtube"
+Issues = "https://github.com/slauger/mp3-to-youtube/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
