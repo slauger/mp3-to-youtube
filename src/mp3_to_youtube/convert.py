@@ -141,6 +141,27 @@ def build_ffmpeg_filter(
         return f"scale=-1:{target_h}:force_original_aspect_ratio=decrease,pad={target_w}:{target_h}:(ow-iw)/2:(oh-ih)/2:#{color}"
 
 
+def get_audio_duration(mp3_file: str) -> float:
+    """
+    Get audio duration in seconds using ffprobe
+
+    Args:
+        mp3_file: Path to MP3 file
+
+    Returns:
+        Duration in seconds
+    """
+    result = subprocess.run(
+        ['ffprobe', '-v', 'quiet', '-show_entries', 'format=duration', '-of', 'csv=p=0', mp3_file],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    if result.returncode != 0:
+        raise ConversionError(f"Failed to get audio duration: {result.stderr}")
+    return float(result.stdout.strip())
+
+
 def convert_mp3_to_mp4(
     mp3_file: str,
     output_file: Optional[str] = None,
@@ -209,6 +230,10 @@ def convert_mp3_to_mp4(
         # Check if filter is complex (contains ;)
         use_filter_complex = ';' in vf
 
+        # Get audio duration to explicitly set video length
+        # (fixes issue where -shortest doesn't work with -filter_complex)
+        audio_duration = get_audio_duration(str(mp3_path))
+
         # Build ffmpeg command
         cmd = [
             'ffmpeg',
@@ -229,7 +254,7 @@ def convert_mp3_to_mp4(
             '-c:a', 'aac',
             '-b:a', '192k',
             '-pix_fmt', 'yuv420p',
-            '-shortest',
+            '-t', str(audio_duration),
             '-movflags', '+faststart',
         ])
 

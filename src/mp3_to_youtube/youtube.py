@@ -24,7 +24,10 @@ class YouTubeError(Exception):
 
 
 # YouTube API scopes
-SCOPES = ['https://www.googleapis.com/auth/youtube.upload']
+SCOPES = [
+    'https://www.googleapis.com/auth/youtube.upload',
+    'https://www.googleapis.com/auth/youtube.readonly'
+]
 
 # Default credentials paths
 DEFAULT_CREDENTIALS_DIR = Path.home() / '.config' / 'mp3-to-youtube'
